@@ -17,5 +17,5 @@ print(f"Time: {time_sum}")
 n_param = sum([p.nelement() for p in model.parameters()])  
 n_paras = f"n_paras: {(n_param/2**20)}M\n"
 print(n_paras)
-macs, params = profile(model, inputs=(input,)) 
+macs, params = profile(model, inputs=(input,)) #的 inputs 参数要求是一个 tuple，里面的内容要和 model.forward 的参数一一对应
 print(f'FLOPs:{macs/(2**30)}G')

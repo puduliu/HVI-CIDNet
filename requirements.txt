@@ -15,4 +15,4 @@ lpips==0.1.4
 opencv-python
 gradio
 huggingface_hub
-safetensors
+safetensors==0.4.0

@@ -1,0 +1,17 @@
+
+
+
+CUDA_VISIBLE_DEVICES=1 python eval.py --unpaired --MEF --unpaired_weights /media/zyserver/data16t/lpd/download/HVI-CIDNet-LOLv2-syn-wperc/pytorch_model.bin --alpha 0.9 --gamma 0.9
+
+
+CUDA_VISIBLE_DEVICES=1 python eval.py --unpaired --MEF --unpaired_weights /media/zyserver/data16t/lpd/download/HVI-CIDNet-Generalization/pytorch_model.bin --alpha 0.9 --gamma 0.9
+
+CUDA_VISIBLE_DEVICES=1 python eval.py --unpaired --test --unpaired_weights /media/zyserver/data16t/lpd/download/HVI-CIDNet-LOLv2-syn-wperc/pytorch_model.bin --alpha 0.9 --gamma 0.9
+
+https://github.com/Fediory/HVI-CIDNet/issues/50
+显卡为4070 (12G），其中batchsize设置为7，epochs=1000，Python=3.8；torch= 2.1.2+cu121,and torchvision=0.16.2+cu121
+
+作者大佬，看有人用您的方法在LOLV1跑到了PSNR=24.7 #50
+
+
+新的版本设置

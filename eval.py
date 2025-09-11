@@ -27,6 +27,9 @@ eval_parser.add_argument('--unpaired', action='store_true', help='output unpaire
 eval_parser.add_argument('--DICM', action='store_true', help='output DICM dataset')
 eval_parser.add_argument('--LIME', action='store_true', help='output LIME dataset')
 eval_parser.add_argument('--MEF', action='store_true', help='output MEF dataset')
+
+eval_parser.add_argument('--test', action='store_true', help='output test dataset')
+
 eval_parser.add_argument('--NPE', action='store_true', help='output NPE dataset')
 eval_parser.add_argument('--VV', action='store_true', help='output VV dataset')
 eval_parser.add_argument('--alpha', type=float, default=1.0)
@@ -59,6 +62,7 @@ def eval(model, testing_data_loader, model_path, output_folder,norm_size=True,LO
             
             input = input.cuda()
             output = model(input**gamma) 
+            print("-------------------------------output.shape = ", output.shape)
             
         if not os.path.exists(output_folder):          
             os.mkdir(output_folder)  
@@ -147,6 +151,9 @@ if __name__ == '__main__':
         elif ep.MEF:
             eval_data = DataLoader(dataset=get_SICE_eval_set("./datasets/MEF"), num_workers=num_workers, batch_size=1, shuffle=False)
             output_folder = './output/MEF/'
+        elif ep.test:
+            eval_data = DataLoader(dataset=get_SICE_eval_set("./datasets/test"), num_workers=num_workers, batch_size=1, shuffle=False)
+            output_folder = './output/test/'
         elif ep.NPE:
             eval_data = DataLoader(dataset=get_SICE_eval_set("./datasets/NPE"), num_workers=num_workers, batch_size=1, shuffle=False)
             output_folder = './output/NPE/'
