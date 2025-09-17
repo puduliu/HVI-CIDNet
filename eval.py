@@ -80,7 +80,56 @@ def eval(model, testing_data_loader, model_path, output_folder,norm_size=True,LO
     elif v2:
         model.trans.gated2 = False
     torch.set_grad_enabled(True)
+
+# TODO edit start
+def eval_dual(model, testing_data_loader, model_path, output_folder,norm_size=True,LOL=False,v2=False,unpaired=False,alpha=1.0,gamma=1.0):
+    torch.set_grad_enabled(False)
+    model.load_state_dict(torch.load(model_path, map_location=lambda storage, loc: storage))
+    print('Pre-trained model is loaded.')
+    model.eval()
+    print('Evaluation:')
+    if LOL:
+        model.trans.gated = True
+    elif v2:
+        model.trans.gated2 = True
+        model.trans.alpha = alpha
+    elif unpaired:
+        model.trans.gated2 = True
+        model.trans.alpha = alpha
+    for batch in tqdm(testing_data_loader):
+        with torch.no_grad():
+            # Dataset returns: im1, im2, im_gt, file1, file2, file_gt
+            im1, im2, im_gt, file1, file2, file_gt = batch
+            im1 = im1.cuda()
+            im2 = im2.cuda()
+            im_gt = im_gt.cuda()  # optional: for metric computation
+
+            # Apply gamma if needed
+            output = model(im1 ** gamma, im2 ** gamma) if gamma != 1.0 else model(im1, im2)
+
+            # Clamp output to [0,1]
+            output = torch.clamp(output, 0, 1)
+
+            # If input was padded, crop back to original size
+            if not norm_size:
+                _, _, h, w = im1.shape
+                output = output[:, :, :h, :w]
+
+            # Convert to PIL and save
+            output_img = transforms.ToPILImage()(output.squeeze(0).cpu())
+            output_name = file1[0] if isinstance(file1, list) else file1
+            output_img.save(os.path.join(output_folder, output_name))
+
+            torch.cuda.empty_cache()
+    print('===> End evaluation')
+    if LOL:
+        model.trans.gated = False
+    elif v2:
+        model.trans.gated2 = False
+    torch.set_grad_enabled(True)
+ # TODO edit end   
     
+        
 if __name__ == '__main__':
     
     cuda = True

@@ -1,0 +1,78 @@
+
+python eval_one_method_LFDT_CT_deno.py
+python eval_one_method_LFDT_PET_deno.py
+python eval_one_method_LFDT_MEFB_deno.py
+python eval_one_method_LFDT_VIF_deno.py
+python eval_one_method_LFDT_Lytro_deno.py
+
+python eval_one_method_IFCNN_CT_deno.py
+python eval_one_method_IFCNN_PET_deno.py
+python eval_one_method_IFCNN_MEFB_deno.py
+python eval_one_method_IFCNN_VIF_deno.py
+python eval_one_method_IFCNN_Lytro_deno.py
+
+python eval_one_method_U2Fusion_CT_deno.py
+python eval_one_method_U2Fusion_PET_deno.py
+python eval_one_method_U2Fusion_MEFB_deno.py
+python eval_one_method_U2Fusion_VIF_deno.py
+python eval_one_method_U2Fusion_Lytro_deno.py
+
+python eval_one_method_MUFusion_CT_deno.py
+python eval_one_method_MUFusion_PET_deno.py
+python eval_one_method_MUFusion_MEFB_deno.py
+python eval_one_method_MUFusion_VIF_deno.py
+python eval_one_method_MUFusion_Lytro_deno.py
+
+python eval_one_method_SwinFusion_CT_deno.py
+python eval_one_method_SwinFusion_PET_deno.py
+python eval_one_method_SwinFusion_MEFB_deno.py
+python eval_one_method_SwinFusion_VIF_deno.py
+python eval_one_method_SwinFusion_Lytro_deno.py
+
+
+python eval_one_method_UDD_CT_adaptive.py
+python eval_one_method_UDD_PET_adaptive.py
+python eval_one_method_UDD_MEFB_adaptive.py
+python eval_one_method_UDD_VIF_adaptive.py
+python eval_one_method_UDD_Lytro_adaptive.py
+
+
+--------------------------------------------原数据集对比
+python eval_one_method_UDD_CT.py
+python eval_one_method_UDD_PET.py
+python eval_one_method_UDD_MEFB.py
+python eval_one_method_UDD_TNO.py
+python eval_one_method_UDD_Lytro.py
+
+python eval_one_method_IFCNN_CT.py
+python eval_one_method_IFCNN_PET.py
+python eval_one_method_IFCNN_MEFB.py
+python eval_one_method_IFCNN_TNO.py
+python eval_one_method_IFCNN_Lytro.py
+
+python eval_one_method_U2Fusion_CT.py
+python eval_one_method_U2Fusion_PET.py
+python eval_one_method_U2Fusion_MEFB.py
+python eval_one_method_U2Fusion_TNO.py
+python eval_one_method_U2Fusion_Lytro.py
+
+python eval_one_method_SwinFusion_CT.py
+python eval_one_method_SwinFusion_PET.py
+python eval_one_method_SwinFusion_MEFB.py
+python eval_one_method_SwinFusion_TNO.py
+python eval_one_method_SwinFusion_Lytro.py
+
+python eval_one_method_MUFusion_CT.py
+python eval_one_method_MUFusion_PET.py
+python eval_one_method_MUFusion_MEFB.py
+python eval_one_method_MUFusion_TNO.py
+python eval_one_method_MUFusion_Lytro.py
+
+python eval_one_method_LFDT_CT.py
+python eval_one_method_LFDT_PET.py
+python eval_one_method_LFDT_MEFB.py
+python eval_one_method_LFDT_TNO.py
+python eval_one_method_LFDT_Lytro.py
+
+
+

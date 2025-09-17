@@ -6,10 +6,10 @@ import torch.optim as optim
 import torch.backends.cudnn as cudnn
 import numpy as np
 from torch.utils.data import DataLoader
-from net.CIDNet import CIDNet
+from net.CIDNet_fusion import CIDNet_DualHDR
 from data.options import option
 from measure import metrics
-from eval import eval
+from eval import eval_dual
 from data.data import *
 from loss.losses import *
 from data.scheduler import *
@@ -30,7 +30,7 @@ def seed_torch():
 def train_init():
     seed_torch()
     cudnn.benchmark = True
-    os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     cuda = opt.gpu_mode
     if cuda and not torch.cuda.is_available():
         raise Exception("No GPU found, please run without --cuda")
@@ -47,18 +47,19 @@ def train(epoch):
     # print("---------------------------training")
     for batch in tqdm(training_data_loader):
         # print("---------------------------training_data_loader")
-        im1, im2, path1, path2 = batch[0], batch[1], batch[2], batch[3]
+        im1, im2, im_gt, path1, path2 = batch[0], batch[1], batch[2], batch[3], batch[4]
         im1 = im1.cuda()
         im2 = im2.cuda()
+        im_gt = im_gt.cuda()
         # print("---------------------------im1.shape = ", im1.shape)
         # use random gamma function (enhancement curve) to improve generalization
         if opt.gamma:
             gamma = random.randint(opt.start_gamma,opt.end_gamma) / 100.0
-            output_rgb = model(im1 ** gamma)  
+            output_rgb = model(im1 ** gamma, im2 ** gamma)  
         else:
-            output_rgb = model(im1)  
+            output_rgb = model(im1, im2)  
             
-        gt_rgb = im2
+        gt_rgb = im_gt
         output_hvi = model.HVIT(output_rgb)
         gt_hvi = model.HVIT(gt_rgb)
         loss_hvi = L1_loss(output_hvi, gt_hvi) + D_loss(output_hvi, gt_hvi) + E_loss(output_hvi, gt_hvi) + opt.P_weight * P_loss(output_hvi, gt_hvi)[0]
@@ -96,44 +97,14 @@ def checkpoint(epoch):
         os.mkdir("./weights") 
     if not os.path.exists("./weights/train"):          
         os.mkdir("./weights/train")  
-    model_out_path = "./weights/train/epoch_{}.pth".format(epoch)
+    model_out_path = "./weights/train/epoch_fusion_{}.pth".format(epoch)
     torch.save(model.state_dict(), model_out_path)
     print("Checkpoint saved to {}".format(model_out_path))
     return model_out_path
     
 def load_datasets():
     print('===> Loading datasets')
-    if opt.lol_v1 or opt.lol_blur or opt.lolv2_real or opt.lolv2_syn or opt.SID or opt.SICE_mix or opt.SICE_grad or opt.SICE_test or opt.fivek:
-        if opt.lol_v1:
-            train_set = get_lol_training_set(opt.data_train_lol_v1,size=opt.cropSize)
-            training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=opt.shuffle)
-            test_set = get_eval_set(opt.data_val_lol_v1)
-            testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=1, shuffle=False)
-            
-        if opt.lol_blur:
-            train_set = get_training_set_blur(opt.data_train_lol_blur,size=opt.cropSize)
-            training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=opt.shuffle)
-            test_set = get_eval_set(opt.data_val_lol_blur)
-            testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=1, shuffle=False)
-
-        if opt.lolv2_real:
-            train_set = get_lol_v2_training_set(opt.data_train_lolv2_real,size=opt.cropSize)
-            training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=opt.shuffle)
-            test_set = get_eval_set(opt.data_val_lolv2_real)
-            testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=1, shuffle=False)
-            
-        if opt.lolv2_syn:
-            train_set = get_lol_v2_syn_training_set(opt.data_train_lolv2_syn,size=opt.cropSize)
-            training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=opt.shuffle)
-            test_set = get_eval_set(opt.data_val_lolv2_syn)
-            testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=1, shuffle=False)
-        
-        if opt.SID:
-            train_set = get_SID_training_set(opt.data_train_SID,size=opt.cropSize)
-            training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=opt.shuffle)
-            test_set = get_eval_set(opt.data_val_SID)
-            testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=1, shuffle=False)
-            
+    if opt.SICE_mix or opt.SICE_grad:
         if opt.SICE_mix:
             train_set = get_SICE_training_set(opt.data_train_SICE,size=opt.cropSize)
             training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=opt.shuffle)
@@ -145,24 +116,14 @@ def load_datasets():
             training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=opt.shuffle)
             test_set = get_SICE_eval_set(opt.data_val_SICE_grad)
             testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=1, shuffle=False)
-        if opt.SICE_test:
-            train_set = get_SICE_training_set(opt.data_train_SICE,size=opt.cropSize)
-            training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=opt.shuffle)
-            test_set = get_SICE_eval_set(opt.data_val_SICE_test)
-            testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=1, shuffle=False)
-                   
-        if opt.fivek:
-            train_set = get_fivek_training_set(opt.data_train_fivek,size=opt.cropSize)
-            training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=opt.shuffle)
-            test_set = get_fivek_eval_set(opt.data_val_fivek)
-            testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=1, shuffle=False)
+
     else:
         raise Exception("should choose a dataset")
     return training_data_loader, testing_data_loader
 
 def build_model():
     print('===> Building model ')
-    model = CIDNet().cuda()
+    model = CIDNet_DualHDR().cuda()
     if opt.start_epoch > 0:
         pth = f"./weights/train/epoch_{opt.start_epoch}.pth"
         model.load_state_dict(torch.load(pth, map_location=lambda storage, loc: storage))
@@ -192,6 +153,7 @@ def init_loss():
     E_weight    = opt.E_weight 
     P_weight    = 1.0
     
+    # TODO 其实这几个损失函数没有毛病， 因为其它多曝光图像融合用的也是L1损失函数
     L1_loss= L1Loss(loss_weight=L1_weight, reduction='mean').cuda()
     D_loss = SSIM(weight=D_weight).cuda()
     E_loss = EdgeLoss(loss_weight=E_weight).cuda()
@@ -230,32 +192,9 @@ if __name__ == '__main__':
         scheduler.step()
         
         if epoch % opt.snapshots == 0:
-            print("--------------------------opt.snapshots = ", opt.snapshots)
             model_out_path = checkpoint(epoch) 
             norm_size = True
-
-            # LOL three subsets
-            if opt.lol_v1:
-                output_folder = 'LOLv1/'
-                label_dir = opt.data_valgt_lol_v1
-            if opt.lolv2_real:
-                output_folder = 'LOLv2_real/'
-                label_dir = opt.data_valgt_lolv2_real
-            if opt.lolv2_syn:
-                output_folder = 'LOLv2_syn/'
-                label_dir = opt.data_valgt_lolv2_syn
-            
-            # LOL-blur dataset with low_blur and high_sharp_scaled
-            if opt.lol_blur:
-                output_folder = 'LOL_blur/'
-                label_dir = opt.data_valgt_lol_blur
-                
-            if opt.SID:
-                output_folder = 'SID/'
-                label_dir = opt.data_valgt_SID
-                npy = True
             if opt.SICE_mix:
-                print("--------------------------opt.SICE_mix = ")
                 output_folder = 'SICE_mix/'
                 label_dir = opt.data_valgt_SICE_mix
                 norm_size = False
@@ -264,19 +203,13 @@ if __name__ == '__main__':
                 label_dir = opt.data_valgt_SICE_grad
                 norm_size = False
             if opt.SICE_test:
-                output_folder = 'SICE_test/'
+                output_folder = 'SICE_test_fusion/'
                 label_dir = opt.data_valgt_SICE_test
                 norm_size = False
-                                
-            if opt.fivek:
-                output_folder = 'fivek/'
-                label_dir = opt.data_valgt_fivek
-                norm_size = False
-
-            # im_dir = opt.val_folder + output_folder + '*.png' # TODO edit, 是不是要支持.jpg
-            im_dir = opt.val_folder + output_folder + '*.jpg' # TODO edit, 是不是要支持.jpg
-            print("------------------------------------------im_dir = ", im_dir)
-            eval(model, testing_data_loader, model_out_path, opt.val_folder+output_folder, 
+                
+            # im_dir = opt.val_folder + output_folder + '*.png' # TODO edit, 是不是要支持.jpg    
+            im_dir = opt.val_folder + output_folder + '*.jpg' # TODO edit jpg, 推理出来好像是jpg格式
+            eval_dual(model, testing_data_loader, model_out_path, opt.val_folder+output_folder, 
                  norm_size=norm_size, LOL=opt.lol_v1, v2=opt.lolv2_real, alpha=0.8)
             
             avg_psnr, avg_ssim, avg_lpips = metrics(im_dir, label_dir, use_GT_mean=False)

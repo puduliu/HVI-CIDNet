@@ -1,0 +1,16 @@
+Metric mean results for MEF - HVI
+========================================
+EN: 7.5150
+MI: 1.7136
+SF: 25.4434
+AG: 10.5783
+SD: 57.3584
+CC: 0.9550
+SCD: nan
+VIF: 0.4113
+MSE: 0.0097
+PSNR: 68.2585
+Qabf: nan
+Nabf: nan
+SSIM: 0.8001
+MS_SSIM: nan
