@@ -15,6 +15,7 @@ eval_parser.add_argument('--lol_v2_real', action='store_true', help='output lol_
 eval_parser.add_argument('--lol_v2_syn', action='store_true', help='output lol_v2_syn dataset')
 eval_parser.add_argument('--SICE_grad', action='store_true', help='output SICE_grad dataset')
 eval_parser.add_argument('--SICE_mix', action='store_true', help='output SICE_mix dataset')
+eval_parser.add_argument('--SICE_test', action='store_true', help='output SICE_test dataset')
 eval_parser.add_argument('--fivek', action='store_true', help='output FiveK dataset')
 
 eval_parser.add_argument('--best_GT_mean', action='store_true', help='output lol_v2_real dataset best_GT_mean')

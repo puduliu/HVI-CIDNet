@@ -17,6 +17,7 @@ mea_parser.add_argument('--lol_v2_real', action='store_true', help='measure lol_
 mea_parser.add_argument('--lol_v2_syn', action='store_true', help='measure lol_v2_syn dataset')
 mea_parser.add_argument('--SICE_grad', action='store_true', help='measure SICE_grad dataset')
 mea_parser.add_argument('--SICE_mix', action='store_true', help='measure SICE_mix dataset')
+mea_parser.add_argument('--SICE_test', action='store_true', help='measure SICE_test dataset')
 mea_parser.add_argument('--fivek', action='store_true', help='measure fivek dataset')
 mea = mea_parser.parse_args()
 
@@ -138,6 +139,9 @@ if __name__ == '__main__':
     if mea.SICE_mix:
         im_dir = './output/SICE_mix/*.png'
         label_dir = './datasets/SICE/SICE_Reshape/'
+    if mea.SICE_test: # TODO 确认一下
+        im_dir = './output/SICE_test/*.jpg'
+        label_dir = '/media/zyserver/data16t/lpd/download/SICE/Dataset/eval/target/'
     if mea.fivek:
         im_dir = './output/fivek/*.jpg'
         label_dir = './datasets/FiveK/test/target/'
